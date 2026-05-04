@@ -22,13 +22,16 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- News Feed Table (For caching/storing news if needed)
+-- News Feed Table (For caching/storing news)
 CREATE TABLE news_feed (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  external_id TEXT UNIQUE, -- to prevent duplicates from API
   title TEXT NOT NULL,
   description TEXT,
   url TEXT NOT NULL,
   source TEXT NOT NULL,
+  image_url TEXT,
+  tag TEXT,
   published_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -91,3 +94,14 @@ CREATE POLICY "Public read alerts" ON alerts FOR SELECT USING (true);
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read profiles" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- ==========================================
+-- V2 MIGRATIONS (Run these if you already created the tables above)
+-- ==========================================
+ALTER TABLE news_feed ADD COLUMN IF NOT EXISTS external_id TEXT UNIQUE;
+ALTER TABLE news_feed ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE news_feed ADD COLUMN IF NOT EXISTS tag TEXT;
+
+-- Fix RLS: Allow users to cache news into the table
+CREATE POLICY "Public insert news_feed" ON news_feed FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update news_feed" ON news_feed FOR UPDATE USING (true);

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/supabase_constants.dart';
 import 'theme/app_theme.dart';
+import 'theme/theme_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_layout.dart';
 
@@ -13,7 +15,12 @@ void main() async {
     anonKey: SupabaseConstants.supabaseAnonKey,
   );
 
-  runApp(const VzhaApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const VzhaApp(),
+    ),
+  );
 }
 
 class VzhaApp extends StatelessWidget {
@@ -21,9 +28,19 @@ class VzhaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     return MaterialApp(
       title: 'VZHA',
-      theme: AppTheme.nordicTheme,
+      theme: AppTheme.getTheme(themeProvider.primaryColor, themeProvider.fontFamily),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(themeProvider.fontSizeScale),
+          ),
+          child: child!,
+        );
+      },
       debugShowCheckedModeBanner: false,
       home: Supabase.instance.client.auth.currentSession == null
           ? const LoginScreen()

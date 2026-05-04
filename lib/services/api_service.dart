@@ -3,13 +3,34 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // Dev.to API
-  static Future<List<dynamic>> fetchTechNews() async {
-    final url = Uri.parse('https://dev.to/api/articles?tag=programming&top=1');
+  static Future<List<dynamic>> fetchTechNews({String tag = 'programming'}) async {
+    final url = Uri.parse('https://dev.to/api/articles?tag=$tag&per_page=30');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     }
-    throw Exception('Failed to load news');
+    throw Exception('Failed to load Dev.to news');
+  }
+
+  // Hacker News Algolia API
+  static Future<List<dynamic>> fetchHackerNews() async {
+    final url = Uri.parse('https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      return json.decode(response.body)['hits'];
+    }
+    throw Exception('Failed to load Hacker News');
+  }
+
+  // GitHub Trending (Search API for recent popular repos)
+  static Future<List<dynamic>> fetchGitHubTrending() async {
+    final lastWeek = DateTime.now().subtract(const Duration(days: 7)).toIso8601String().split('T')[0];
+    final url = Uri.parse('https://api.github.com/search/repositories?q=created:>$lastWeek&sort=stars&order=desc&per_page=30');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      return json.decode(response.body)['items'];
+    }
+    throw Exception('Failed to load GitHub Trending');
   }
 
   // NPM Registry API
