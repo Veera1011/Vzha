@@ -17,7 +17,7 @@ class ThemeProvider extends ChangeNotifier {
   final List<double> availableSizes = const [0.8, 1.0, 1.2]; // Small, Normal, Large
 
   // Current states
-  Color _primaryColor = const Color(0xFF2563EB);
+  Color _primaryColor = const Color(0xFF007185);
   String _fontFamily = 'Inter';
   double _fontSizeScale = 1.0;
 

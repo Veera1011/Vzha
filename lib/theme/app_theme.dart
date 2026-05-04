@@ -32,17 +32,17 @@ class AppTheme {
       colorScheme: colorScheme,
       textTheme: baseTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
+        backgroundColor: const Color(0xFF84D8E3), // Amazon light teal
+        foregroundColor: Colors.black87,
         elevation: 0,
-        scrolledUnderElevation: 2,
+        scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: colorScheme.onSurface),
+        iconTheme: const IconThemeData(color: Colors.black87),
         titleTextStyle: TextStyle(
           fontFamily: baseTextTheme.titleLarge?.fontFamily,
-          color: colorScheme.onSurface,
+          color: Colors.black87,
           fontSize: 22,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           letterSpacing: -0.5,
         ),
       ),
@@ -83,9 +83,20 @@ class AppTheme {
         prefixIconColor: colorScheme.onSurfaceVariant,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        indicatorColor: colorScheme.secondaryContainer,
-        backgroundColor: colorScheme.surfaceContainer,
-        labelTextStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        backgroundColor: Colors.white,
+        indicatorColor: Colors.transparent,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.primary);
+          }
+          return const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54);
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(color: colorScheme.primary, size: 28);
+          }
+          return const IconThemeData(color: Colors.black54, size: 26);
+        }),
       ),
     );
   }

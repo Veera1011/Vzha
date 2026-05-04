@@ -14,55 +14,43 @@ class LandingScreen extends StatelessWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              theme.primaryColor.withOpacity(0.8),
-              theme.scaffoldBackgroundColor,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Spacer(flex: 2),
+                const Spacer(),
                 // Logo or Icon
                 Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
+                  alignment: Alignment.center,
+                  child: Icon(
                     Icons.rocket_launch,
                     size: 80,
-                    color: Colors.white,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 24),
                 Text(
                   'Welcome to VZHA',
-                  style: theme.textTheme.displayLarge?.copyWith(
+                  style: theme.textTheme.displaySmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 40,
+                    color: Colors.black87,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
                   'Your personalized developer productivity hub.',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white70,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.black54,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const Spacer(flex: 3),
+                const Spacer(flex: 2),
                 if (isLogged)
                   ElevatedButton(
                     onPressed: () {
@@ -73,14 +61,14 @@ class LandingScreen extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: theme.primaryColor,
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFFFD814), // Amazon Yellow
+                      foregroundColor: Colors.black87,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      elevation: 8,
+                      elevation: 0,
                     ),
-                    child: const Text('Go to Dashboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: const Text('Go to Dashboard', style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
                   )
                 else ...[
                   ElevatedButton(
@@ -92,32 +80,34 @@ class LandingScreen extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: theme.primaryColor,
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFFFD814), // Amazon Yellow
+                      foregroundColor: Colors.black87,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      elevation: 8,
+                      elevation: 0,
                     ),
-                    child: const Text('Log In', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
                   ),
-                  const SizedBox(height: 16),
-                  OutlinedButton(
+                  const SizedBox(height: 12),
+                  ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const SignUpScreen()),
                       );
                     },
-                    style: OutlinedButton.styleFrom(
+                    style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: theme.primaryColor, width: 2),
+                      backgroundColor: Colors.grey.shade200,
+                      foregroundColor: Colors.black87,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey.shade300),
                       ),
-                      backgroundColor: Colors.white.withOpacity(0.9),
+                      elevation: 0,
                     ),
-                    child: Text('Sign Up', style: TextStyle(fontSize: 18, color: theme.primaryColor, fontWeight: FontWeight.bold)),
+                    child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
                   ),
                 ],
                 const Spacer(),
