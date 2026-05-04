@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/supabase_service.dart';
+import '../../widgets/ask_ai_dialog.dart';
 
 class PackagesTab extends StatefulWidget {
   const PackagesTab({super.key});
@@ -108,10 +109,30 @@ class _PackagesTabState extends State<PackagesTab> {
                     Text('Latest Version: ${_packageData!['latest_version']}', 
                       style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
                     const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.bookmark),
-                      label: const Text('Save Package'),
-                      onPressed: _savePackage,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.bookmark),
+                            label: const Text('Save Package'),
+                            onPressed: _savePackage,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.auto_awesome, color: Colors.blue),
+                            label: const Text('Ask AI'),
+                            onPressed: () {
+                              AskAiDialog.show(
+                                context,
+                                title: _packageData!['name'],
+                                contextData: "Package Name: \${_packageData!['name']}\\nDescription: \${_packageData!['description'] ?? 'No description'}\\nLatest Version: \${_packageData!['latest_version']}\\nEcosystem: \$_ecosystem",
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/supabase_service.dart';
+import '../../widgets/ask_ai_dialog.dart';
 
 class AlertsTab extends StatefulWidget {
   const AlertsTab({super.key});
@@ -102,9 +103,24 @@ class _AlertsTabState extends State<AlertsTab> {
                             leading: const Icon(Icons.warning, color: Colors.red),
                             title: Text(vuln['summary'] ?? vuln['id'], style: const TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text('ID: ${vuln['id']}'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.bookmark_border),
-                              onPressed: () => _saveAlert(vuln),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.auto_awesome, color: Colors.blue),
+                                  onPressed: () {
+                                    AskAiDialog.show(
+                                      context,
+                                      title: vuln['id'] ?? 'Vulnerability',
+                                      contextData: "ID: \${vuln['id']}\\nSummary: \${vuln['summary'] ?? 'No summary'}\\nDetails: \${vuln['details'] ?? 'No details'}",
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.bookmark_border),
+                                  onPressed: () => _saveAlert(vuln),
+                                ),
+                              ],
                             ),
                           ),
                         );

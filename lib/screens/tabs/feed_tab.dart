@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/supabase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../widgets/ask_ai_dialog.dart';
 
 class FeedTab extends StatefulWidget {
   const FeedTab({super.key});
@@ -139,6 +140,16 @@ class _FeedTabState extends State<FeedTab> {
                                             Text(article['description'], maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium),
                                         ],
                                       ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.auto_awesome, color: Colors.blue),
+                                      onPressed: () {
+                                        AskAiDialog.show(
+                                          context,
+                                          title: article['title'] ?? 'Article',
+                                          contextData: "Title: \${article['title']}\\nDescription: \${article['description'] ?? 'No description'}",
+                                        );
+                                      },
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.bookmark_border),

@@ -6,6 +6,7 @@ import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_layout.dart';
+import 'screens/landing_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,9 +43,7 @@ class VzhaApp extends StatelessWidget {
         );
       },
       debugShowCheckedModeBanner: false,
-      home: Supabase.instance.client.auth.currentSession == null
-          ? const LoginScreen()
-          : const MainLayout(),
+      home: const LandingScreen(),
     );
   }
 }

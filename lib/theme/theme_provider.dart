@@ -6,14 +6,7 @@ class ThemeProvider extends ChangeNotifier {
   static const String _fontKey = 'font_family';
   static const String _sizeKey = 'font_size';
 
-  // Available options
-  final List<Color> availableColors = const [
-    Color(0xFF2563EB), // Electric Blue
-    Color(0xFF10B981), // Emerald Green
-    Color(0xFF8B5CF6), // Purple
-    Color(0xFFEF4444), // Red
-  ];
-  
+
   final List<String> availableFonts = const [
     'Inter',
     'Roboto',
