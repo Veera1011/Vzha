@@ -8,14 +8,15 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.grey.shade200, // Amazon's light grey background
+      color: Colors.grey.shade100, // Clean light background
       child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top Carousel Banner Mock
+            // Top Carousel Banner for announcements
             SizedBox(
-              height: 200,
+              height: 180,
               child: PageView(
                 children: [
                   _buildBanner(context, 'Explore Developer Tools', Colors.blue.shade800),
@@ -24,70 +25,40 @@ class HomeTab extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            // Horizontal scrolling category list
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Keep exploring for your projects', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 120,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      children: [
-                        _buildCategoryItem(context, 'News Feed', Icons.article, () => onTabSelected(1)),
-                        _buildCategoryItem(context, 'Packages', Icons.inventory_2, () => onTabSelected(2)),
-                        _buildCategoryItem(context, 'Alerts', Icons.warning_rounded, () => onTabSelected(3)),
-                        _buildCategoryItem(context, 'Saved', Icons.bookmark, () => onTabSelected(4)),
-                      ],
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 32),
+            Text(
+              'Your Dashboard',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 8),
-            // Deal of the Day / Featured Section
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Top Productivity Picks', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildGridCard(context, 'Flutter Favorites', Icons.flutter_dash, () => onTabSelected(2)),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildGridCard(context, 'Daily Tech News', Icons.newspaper, () => onTabSelected(1)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildGridCard(context, 'Security Advisories', Icons.security, () => onTabSelected(3)),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildGridCard(context, 'Your Saved Items', Icons.favorite_border, () => onTabSelected(4)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            _buildActionCard(
+              context,
+              title: 'News Feed',
+              description: 'Stay updated with the latest tech articles curated for you.',
+              icon: Icons.article_outlined,
+              color: Colors.blue,
+              onTap: () => onTabSelected(1), // Index 1 is Feed
+            ),
+            const SizedBox(height: 12),
+            _buildActionCard(
+              context,
+              title: 'Package Tracker',
+              description: 'Instantly check versions for NPM and Pub.dev packages.',
+              icon: Icons.inventory_2_outlined,
+              color: Colors.green,
+              onTap: () => onTabSelected(2), // Index 2 is Packages
+            ),
+            const SizedBox(height: 12),
+            _buildActionCard(
+              context,
+              title: 'Vulnerability Alerts',
+              description: 'Query the OSV database for the latest security threats.',
+              icon: Icons.warning_amber_rounded,
+              color: Colors.red,
+              onTap: () => onTabSelected(3), // Index 3 is Alerts
             ),
             const SizedBox(height: 24),
           ],
@@ -98,69 +69,73 @@ class HomeTab extends StatelessWidget {
 
   Widget _buildBanner(BuildContext context, String text, Color color) {
     return Container(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       alignment: Alignment.center,
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          text,
+          style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
 
-  Widget _buildCategoryItem(BuildContext context, String title, IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 100,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Column(
-          children: [
-            Container(
-              height: 80,
-              width: 80,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+  Widget _buildActionCard(BuildContext context, {
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200, width: 1),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 28),
               ),
-              child: Icon(icon, size: 40, color: Theme.of(context).primaryColor),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGridCard(BuildContext context, String title, IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 32, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+                    const SizedBox(height: 4),
+                    Text(description, style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
         ),
       ),
     );

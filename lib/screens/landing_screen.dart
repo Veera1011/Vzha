@@ -44,9 +44,13 @@ class LandingScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Image.asset(
-                        'assets/App_log.png',
-                        height: 100,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/App_log.png',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 48),
