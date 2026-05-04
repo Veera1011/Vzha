@@ -39,7 +39,7 @@ $question
       final data = jsonDecode(response.body);
       return data['choices'][0]['message']['content'];
     } else {
-      throw Exception('Failed to get AI response: \${response.body}');
+      throw Exception('Failed to get AI response: ${response.body}');
     }
   }
 }

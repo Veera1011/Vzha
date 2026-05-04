@@ -78,7 +78,7 @@ class _AskAiDialogState extends State<AskAiDialog> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Ask AI about: \${widget.title}',
+                    'Ask AI about: ${widget.title}',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
