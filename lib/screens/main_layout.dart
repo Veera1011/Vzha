@@ -44,7 +44,12 @@ class _MainLayoutState extends State<MainLayout> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(110),
         child: AppBar(
-          titleSpacing: 12,
+          leadingWidth: 60,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 12.0, top: 4, bottom: 4),
+            child: Image.asset('assets/App_log.png'),
+          ),
+          titleSpacing: 8,
           title: Container(
             height: 42,
             decoration: BoxDecoration(

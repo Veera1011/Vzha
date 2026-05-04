@@ -48,6 +48,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Container(
+                alignment: Alignment.center,
+                child: Image.asset(
+                  'assets/App_log.png',
+                  height: 100,
+                ),
+              ),
+              const SizedBox(height: 24),
               TextField(
                 controller: _emailController,
                 decoration: const InputDecoration(

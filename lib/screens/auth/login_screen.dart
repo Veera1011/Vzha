@@ -45,13 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'VZHA',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                textAlign: TextAlign.center,
+              Container(
+                alignment: Alignment.center,
+                child: Image.asset(
+                  'assets/App_log.png',
+                  height: 100,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
