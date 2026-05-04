@@ -23,7 +23,7 @@ class VzhaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'VZHA',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.nordicTheme,
       debugShowCheckedModeBanner: false,
       home: Supabase.instance.client.auth.currentSession == null
           ? const LoginScreen()
