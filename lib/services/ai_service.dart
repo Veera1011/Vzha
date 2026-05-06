@@ -21,7 +21,7 @@ $question
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'model': 'openai/gpt-oss-120b',
+        'model': 'llama3-70b-8192',
         'messages': [
           {
             'role': 'user',
@@ -31,7 +31,6 @@ $question
         'temperature': 1,
         'max_completion_tokens': 8192,
         'top_p': 1,
-        'reasoning_effort': 'medium',
       }),
     );
 

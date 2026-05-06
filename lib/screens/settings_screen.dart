@@ -18,6 +18,19 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          const Text('Appearance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Card(
+            margin: EdgeInsets.zero,
+            child: SwitchListTile(
+              title: const Text('Dark Mode'),
+              subtitle: const Text('Use a dark color scheme'),
+              value: themeProvider.isDarkMode,
+              onChanged: (value) => themeProvider.toggleDarkMode(),
+              secondary: const Icon(Icons.dark_mode_outlined),
+            ),
+          ),
+          const SizedBox(height: 24),
           const Text('Theme Color', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Row(

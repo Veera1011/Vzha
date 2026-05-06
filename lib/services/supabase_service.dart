@@ -102,6 +102,13 @@ class SupabaseService {
     return await _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
+  Future<void> signInWithGoogle() async {
+    await _supabase.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: 'io.supabase.flutter://login-callback/',
+    );
+  }
+
   Future<void> signOut() async {
     await _supabase.auth.signOut();
   }

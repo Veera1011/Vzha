@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import 'auth/login_screen.dart';
-import 'tabs/feed_tab.dart';
-import 'tabs/packages_tab.dart';
-import 'tabs/alerts_tab.dart';
-import 'tabs/saved_tab.dart';
 import 'settings_screen.dart';
+import 'saved_screen.dart';
+import 'tabs/feed_tab.dart';
+import 'tabs/tools_tab.dart';
 import 'tabs/home_tab.dart';
+import 'tabs/chat_rooms_screen.dart';
+
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
 
@@ -18,106 +20,214 @@ class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
   final SupabaseService _supabaseService = SupabaseService();
 
-  final List<Widget> _tabs = [];
+  // Bottom nav visibility (auto-hide on scroll)
+  bool _navVisible = true;
+  static const _navAnimDuration = Duration(milliseconds: 220);
+
+  // Pages — each kept alive via IndexedStack
+  late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-    _tabs.addAll([
-      HomeTab(onTabSelected: (index) => setState(() => _currentIndex = index)),
+    _pages = [
+      HomeTab(onTabSelected: (i) => setState(() => _currentIndex = i)),
       const FeedTab(),
-      const PackagesTab(),
-      const AlertsTab(),
-      const SavedTab(),
-    ]);
+      const ToolsTab(),
+      const ChatRoomsScreen(),
+    ];
+  }
+
+  void _onScroll(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta ?? 0;
+      if (delta > 3 && _navVisible) setState(() => _navVisible = false);
+      if (delta < -3 && !_navVisible) setState(() => _navVisible = true);
+    }
   }
 
   Future<void> _logout() async {
     await _supabaseService.signOut();
     if (!mounted) return;
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
+
+  static const _titles = ['Home', 'Feed', 'Tools', 'Dev Chat'];
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final user = Supabase.instance.client.auth.currentUser;
+    final email = user?.email ?? 'Developer';
+    final initial = email[0].toUpperCase();
+
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: AppBar(
-          leadingWidth: 60,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 12.0, top: 4, bottom: 4),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/App_log.png',
-                width: 44,
-                height: 44,
-                fit: BoxFit.cover,
+      // ════════════════════════════════════════════════════════════════════
+      // Navigation Drawer
+      // ════════════════════════════════════════════════════════════════════
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── User header ──────────────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+                color: cs.primaryContainer,
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 26,
+                      backgroundColor: cs.primary,
+                      child: Text(initial, style: tt.titleLarge?.copyWith(color: cs.onPrimary, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(email, style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: cs.onPrimaryContainer), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text('Developer', style: tt.labelSmall?.copyWith(color: cs.onPrimaryContainer.withValues(alpha: 0.7))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Divider(height: 1, color: cs.outlineVariant),
+
+              // ── Menu items ───────────────────────────────────────────────
+              ListTile(
+                leading: Icon(Icons.bookmark_outline, color: cs.onSurface),
+                title: Text('Saved Items', style: tt.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedScreen()));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.settings_outlined, color: cs.onSurface),
+                title: Text('Settings & Appearance', style: tt.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                },
+              ),
+
+              const Spacer(),
+              Divider(height: 1, color: cs.outlineVariant),
+
+              // ── Sign out ─────────────────────────────────────────────────
+              ListTile(
+                leading: Icon(Icons.logout, color: cs.error),
+                title: Text('Sign Out', style: tt.bodyMedium?.copyWith(color: cs.error)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _logout();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+
+      // ════════════════════════════════════════════════════════════════════
+      // AppBar
+      // ════════════════════════════════════════════════════════════════════
+      appBar: AppBar(
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: 'Menu',
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+        title: Text(_titles[_currentIndex]),
+        actions: [
+          // User avatar pill
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () => Scaffold.of(context).openDrawer(),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: cs.primaryContainer,
+                child: Text(
+                  initial,
+                  style: tt.labelMedium?.copyWith(
+                    color: cs.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
-          titleSpacing: 8,
-          title: Container(
-            height: 42,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-              boxShadow: const [
-                BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Icon(Icons.search, color: Colors.black54),
-                ),
-                const Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search VZHA...',
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      fillColor: Colors.transparent,
-                      filled: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: const Icon(Icons.camera_alt_outlined, color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-              },
-            ),
-          ],
+        ],
+      ),
+
+      // ════════════════════════════════════════════════════════════════════
+      // Body — IndexedStack keeps each page alive
+      // ════════════════════════════════════════════════════════════════════
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (n) {
+          _onScroll(n);
+          return false;
+        },
+        child: IndexedStack(
+          index: _currentIndex,
+          children: _pages,
         ),
       ),
-      body: _tabs[_currentIndex],
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.black12, width: 1)),
-        ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) => setState(() => _currentIndex = index),
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-            NavigationDestination(icon: Icon(Icons.article_outlined), selectedIcon: Icon(Icons.article), label: 'Feed'),
-            NavigationDestination(icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: 'Packages'),
-            NavigationDestination(icon: Icon(Icons.warning_amber_rounded), selectedIcon: Icon(Icons.warning_rounded), label: 'Alerts'),
-            NavigationDestination(icon: Icon(Icons.bookmark_border), selectedIcon: Icon(Icons.bookmark), label: 'Saved'),
-          ],
+
+      // ════════════════════════════════════════════════════════════════════
+      // Bottom Navigation Bar — hides on scroll down, shows on scroll up
+      // ════════════════════════════════════════════════════════════════════
+      bottomNavigationBar: AnimatedSlide(
+        duration: _navAnimDuration,
+        curve: Curves.easeInOut,
+        offset: _navVisible ? Offset.zero : const Offset(0, 1),
+        child: AnimatedOpacity(
+          duration: _navAnimDuration,
+          opacity: _navVisible ? 1.0 : 0.0,
+          child: NavigationBar(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (i) {
+              setState(() {
+                _currentIndex = i;
+                _navVisible = true; // always show on tab switch
+              });
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home_rounded),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.article_outlined),
+                selectedIcon: Icon(Icons.article_rounded),
+                label: 'Feed',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.build_outlined),
+                selectedIcon: Icon(Icons.build_rounded),
+                label: 'Tools',
+              ),
+              NavigationDestination(
+                icon: Badge(
+                  label: const Text('3'),
+                  child: const Icon(Icons.forum_outlined),
+                ),
+                selectedIcon: const Icon(Icons.forum_rounded),
+                label: 'Chat',
+              ),
+            ],
+          ),
         ),
       ),
     );

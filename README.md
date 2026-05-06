@@ -1,6 +1,6 @@
-# VZHA - Developer Productivity Hub 🚀
+# VZHA — Built by devs, for devs. 🚀
 
-VZHA is a modern, developer-focused mobile application built with Flutter and Supabase. It serves as a central hub for developers to stay up-to-date with tech news, track package versions across different ecosystems, and monitor security vulnerabilities.
+VZHA is a modern developer app built with Flutter and Supabase. A central place for developers to read tech news, track package versions, monitor security vulnerabilities, and collaborate in real-time chat rooms.
 
 ## ✨ Features
 
