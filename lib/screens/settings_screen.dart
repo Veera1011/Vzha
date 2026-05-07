@@ -79,6 +79,61 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
+          const Text('Font Color', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: themeProvider.fontColor ?? (themeProvider.isDarkMode ? Colors.white : Colors.black),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey, width: 2),
+                ),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      Color pickerColor = themeProvider.fontColor ?? (themeProvider.isDarkMode ? Colors.white : Colors.black);
+                      return AlertDialog(
+                        title: const Text('Pick a font color!'),
+                        content: SingleChildScrollView(
+                          child: ColorPicker(
+                            pickerColor: pickerColor,
+                            onColorChanged: (Color color) {
+                              pickerColor = color;
+                            },
+                          ),
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('Reset'),
+                            onPressed: () {
+                              themeProvider.setFontColor(null);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text('Apply'),
+                            onPressed: () {
+                              themeProvider.setFontColor(pickerColor);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text('Pick Font Color'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
           const Text('Font Family', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Card(

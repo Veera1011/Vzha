@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatRoom {
   final String id;
@@ -108,6 +109,32 @@ class ChatService {
     });
   }
 
+  // ── Unread Counts ─────────────────────────────────────────────────────────
+
+  Future<int> getUnreadCount(String roomId, DateTime? lastReadAt) async {
+    final dayAgo = DateTime.now().subtract(const Duration(days: 1)).toIso8601String();
+    final startTime = lastReadAt?.toIso8601String() ?? dayAgo;
+
+    final response = await _supabase
+        .from('chat_messages')
+        .select('id')
+        .eq('room_id', roomId)
+        .gt('created_at', startTime)
+        .count(CountOption.exact);
+    
+    return response.count;
+  }
+
+  Future<int> getTotalUnreadCount() async {
+    final rooms = await getRooms();
+    int total = 0;
+    for (var room in rooms) {
+      final lastRead = await getLastReadAt(room.id);
+      total += await getUnreadCount(room.id, lastRead);
+    }
+    return total;
+  }
+
   // ── Realtime stream ────────────────────────────────────────────────────────
 
   Stream<List<ChatMessage>> messagesStream(String roomId) {
@@ -115,7 +142,22 @@ class ChatService {
         .from('chat_messages')
         .stream(primaryKey: ['id'])
         .eq('room_id', roomId)
-        .order('created_at')
+        .order('created_at', ascending: false)
         .map((rows) => rows.map((e) => ChatMessage.fromMap(e)).toList());
+  }
+
+  // ── Read Status Helpers ───────────────────────────────────────────────────
+
+  static const _readPrefix = 'last_read_room_';
+
+  Future<void> markRoomAsRead(String roomId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('$_readPrefix$roomId', DateTime.now().toIso8601String());
+  }
+
+  Future<DateTime?> getLastReadAt(String roomId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final val = prefs.getString('$_readPrefix$roomId');
+    return val != null ? DateTime.parse(val) : null;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../services/supabase_service.dart';
 import '../main_layout.dart';
 import 'signup_screen.dart';
@@ -49,6 +50,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.back),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+        ),
+        title: const Text('Login'),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

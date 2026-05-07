@@ -6,6 +6,7 @@ class ThemeProvider extends ChangeNotifier {
   static const String _fontKey = 'font_family';
   static const String _sizeKey = 'font_size';
   static const String _darkKey = 'is_dark_mode';
+  static const String _fontColorKey = 'font_color';
 
 
   final List<String> availableFonts = const [
@@ -19,12 +20,14 @@ class ThemeProvider extends ChangeNotifier {
 
   // Current states
   Color _primaryColor = const Color(0xFF007185);
+  Color? _fontColor;
   String _fontFamily = 'Inter';
   double _fontSizeScale = 1.0;
   bool _isDarkMode = false;
 
   // Getters
   Color get primaryColor => _primaryColor;
+  Color? get fontColor => _fontColor;
   String get fontFamily => _fontFamily;
   double get fontSizeScale => _fontSizeScale;
   bool get isDarkMode => _isDarkMode;
@@ -50,6 +53,12 @@ class ThemeProvider extends ChangeNotifier {
     
     // Load Dark Mode
     _isDarkMode = prefs.getBool(_darkKey) ?? false;
+
+    // Load Font Color
+    int? fontColorValue = prefs.getInt(_fontColorKey);
+    if (fontColorValue != null) {
+      _fontColor = Color(fontColorValue);
+    }
     
     notifyListeners();
   }
@@ -59,6 +68,17 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt(_colorKey, color.value);
+  }
+
+  Future<void> setFontColor(Color? color) async {
+    _fontColor = color;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (color == null) {
+      prefs.remove(_fontColorKey);
+    } else {
+      prefs.setInt(_fontColorKey, color.value);
+    }
   }
 
   Future<void> setFontFamily(String font) async {

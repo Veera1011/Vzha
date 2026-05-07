@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../services/supabase_service.dart';
 import '../main_layout.dart';
 import 'login_screen.dart';
@@ -29,7 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created! Please check your email for confirmation.')),
+        const SnackBar(content: Text('Account created successfully! Welcome to VZHA.')),
       );
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
     } catch (e) {
@@ -46,6 +47,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.back),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+        ),
         title: const Text('Sign Up'),
       ),
       body: Center(

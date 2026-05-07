@@ -6,7 +6,7 @@ class SupabaseService {
 
   // Database (News Feed Caching)
   Future<List<Map<String, dynamic>>> getNewsFeed(String source) async {
-    final cutoff = DateTime.now().subtract(const Duration(hours: 6)).toIso8601String();
+    final cutoff = DateTime.now().subtract(const Duration(hours: 2)).toIso8601String();
     
     // Check Cache
     var query = _supabase.from('news_feed').select().gte('created_at', cutoff).order('published_at', ascending: false).limit(30);

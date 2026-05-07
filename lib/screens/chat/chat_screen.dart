@@ -26,6 +26,12 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _sendingAi = false;
 
   @override
+  void initState() {
+    super.initState();
+    _chatService.markRoomAsRead(widget.room.id);
+  }
+
+  @override
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
@@ -155,8 +161,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   );
                 }
-                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
                 return ListView.builder(
+                  reverse: true,
                   controller: _scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   itemCount: messages.length,
@@ -451,9 +457,29 @@ class _InputBar extends StatelessWidget {
     required this.onSend,
   });
 
+  void _insertText(String text, {int cursorOffset = 0}) {
+    final selection = controller.selection;
+    final currentText = controller.text;
+    
+    if (selection.start >= 0) {
+      final newText = currentText.replaceRange(selection.start, selection.end, text);
+      controller.text = newText;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: selection.start + text.length + cursorOffset),
+      );
+    } else {
+      controller.text = currentText + text;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length + cursorOffset),
+      );
+    }
+    focusNode.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return SafeArea(
       top: false,
@@ -462,42 +488,114 @@ class _InputBar extends StatelessWidget {
           color: cs.surface,
           border: Border(top: BorderSide(color: cs.outlineVariant, width: 0.5)),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                focusNode: focusNode,
-                minLines: 1,
-                maxLines: 5,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  hintText: 'Message #… or @ai <question>',
-                  filled: true,
-                  fillColor: cs.surfaceContainerHighest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
+            // Formatting Toolbar
+            Container(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerLowest,
+                border: Border(bottom: BorderSide(color: cs.outlineVariant, width: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  _ToolbarButton(
+                    icon: Icons.auto_awesome,
+                    label: '@ai',
+                    onPressed: () => _insertText('@ai '),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-                onSubmitted: (_) => onSend(),
+                  _ToolbarButton(
+                    icon: Icons.code,
+                    label: 'Code',
+                    onPressed: () => _insertText('```dart\n\n```', cursorOffset: -4),
+                  ),
+                  _ToolbarButton(
+                    icon: Icons.format_bold,
+                    onPressed: () => _insertText('****', cursorOffset: -2),
+                  ),
+                  _ToolbarButton(
+                    icon: Icons.format_italic,
+                    onPressed: () => _insertText('**', cursorOffset: -1),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Markdown supported',
+                    style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant.withOpacity(0.5)),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            FilledButton.icon(
-              onPressed: onSend,
-              icon: const Icon(Icons.send, size: 18),
-              label: const Text('Send'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      minLines: 1,
+                      maxLines: 5,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: tt.bodyMedium,
+                      decoration: InputDecoration(
+                        hintText: 'Message #…',
+                        filled: true,
+                        fillColor: cs.surfaceContainerHighest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      ),
+                      onSubmitted: (_) => onSend(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    onPressed: onSend,
+                    icon: const Icon(Icons.send, size: 20),
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ToolbarButton extends StatelessWidget {
+  final IconData icon;
+  final String? label;
+  final VoidCallback onPressed;
+
+  const _ToolbarButton({
+    required this.icon,
+    this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return TextButton.icon(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        foregroundColor: cs.onSurfaceVariant,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+      ),
+      icon: Icon(icon, size: 16),
+      label: label != null 
+        ? Text(label!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))
+        : const SizedBox.shrink(),
     );
   }
 }

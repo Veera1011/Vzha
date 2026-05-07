@@ -62,6 +62,40 @@ class ApiService {
     throw Exception('Package not found on pub.dev');
   }
 
+  // Maven Central API (Java/Kotlin)
+  static Future<Map<String, dynamic>> fetchMavenPackage(String artifactId) async {
+    final url = Uri.parse('https://search.maven.org/solrsearch/select?q=a:$artifactId&rows=1&wt=json');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final docs = data['response']?['docs'] as List?;
+      if (docs != null && docs.isNotEmpty) {
+        final doc = docs.first;
+        return {
+          'name': doc['id'],
+          'latest_version': doc['latestVersion'],
+          'description': 'Group: ${doc['g']}',
+        };
+      }
+    }
+    throw Exception('Package not found on Maven Central');
+  }
+
+  // PyPI API (Python)
+  static Future<Map<String, dynamic>> fetchPyPiPackage(String packageName) async {
+    final url = Uri.parse('https://pypi.org/pypi/$packageName/json');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'name': data['info']['name'],
+        'latest_version': data['info']['version'],
+        'description': data['info']['summary'],
+      };
+    }
+    throw Exception('Package not found on PyPI');
+  }
+
   // OSV.dev API
   // Note: OSV /v1/query typically requires a package or commit. For a general feed, we'll search recent npm/pub issues.
   // Actually, OSV API doesn't support a simple "recent" endpoint. 

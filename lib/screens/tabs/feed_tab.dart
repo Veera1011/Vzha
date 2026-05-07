@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/supabase_service.dart';
 import '../../widgets/ask_ai_dialog.dart';
 import '../../widgets/shimmer_skeleton.dart';
+import '../ai_assistant_screen.dart';
 import 'package:share_plus/share_plus.dart';
 
 class FeedTab extends StatefulWidget {
@@ -255,11 +256,14 @@ class _ArticleCard extends StatelessWidget {
                         icon: Icon(Icons.auto_awesome, color: cs.primary, size: 20),
                         tooltip: 'Ask AI',
                         onPressed: () {
-                          AskAiDialog.show(
+                          Navigator.push(
                             context,
-                            title: article['title'] ?? 'Article',
-                            contextData:
-                                "Title: ${article['title']}\nDescription: ${article['description'] ?? 'No description'}",
+                            MaterialPageRoute(
+                              builder: (_) => AiAssistantScreen(
+                                initialQuery: 'Summarize this: ${article['title']}',
+                                contextData: "Title: ${article['title']}\nDescription: ${article['description'] ?? 'No description'}\nSource: ${article['source']}",
+                              ),
+                            ),
                           );
                         },
                       ),

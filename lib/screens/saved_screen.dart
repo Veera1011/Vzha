@@ -66,6 +66,9 @@ class _SavedScreenState extends State<SavedScreen> with SingleTickerProviderStat
   Future<void> _deleteItem(int tabIndex, String itemId) async {
     try {
       await _supabaseService.deleteSavedItem(itemId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item removed from saved.')));
+      }
       _loadTab(tabIndex);
     } catch (e) {
       if (mounted) {

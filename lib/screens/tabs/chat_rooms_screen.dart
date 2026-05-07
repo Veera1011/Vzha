@@ -16,6 +16,7 @@ class _ChatRoomsScreenState extends State<ChatRoomsScreen>
   late TabController _tabController;
   List<ChatRoom> _packageRooms = [];
   List<ChatRoom> _topicRooms = [];
+  Map<String, int> _unreadCounts = {};
   bool _loading = true;
 
   @override
@@ -34,9 +35,17 @@ class _ChatRoomsScreenState extends State<ChatRoomsScreen>
   Future<void> _loadRooms() async {
     try {
       final rooms = await _chatService.getRooms();
+      final counts = <String, int>{};
+      
+      for (var room in rooms) {
+        final lastRead = await _chatService.getLastReadAt(room.id);
+        counts[room.id] = await _chatService.getUnreadCount(room.id, lastRead);
+      }
+
       setState(() {
         _packageRooms = rooms.where((r) => r.type == 'package').toList();
         _topicRooms = rooms.where((r) => r.type == 'topic').toList();
+        _unreadCounts = counts;
         _loading = false;
       });
     } catch (_) {
@@ -204,13 +213,25 @@ class _ChatRoomsScreenState extends State<ChatRoomsScreen>
       ),
       body: _loading
           ? const ShimmerListLoading(itemCount: 8)
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _RoomList(rooms: _packageRooms, onTap: _openRoom, emptyLabel: 'No package rooms yet.\nCreate one!'),
-                _RoomList(rooms: _topicRooms, onTap: _openRoom, emptyLabel: 'No topic rooms yet.\nCreate one!'),
-              ],
-            ),
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _RoomList(
+                    rooms: _packageRooms,
+                    unreadCounts: _unreadCounts,
+                    onTap: _openRoom,
+                    onRefresh: _loadRooms,
+                    emptyLabel: 'No package rooms yet.\nCreate one!',
+                  ),
+                  _RoomList(
+                    rooms: _topicRooms,
+                    unreadCounts: _unreadCounts,
+                    onTap: _openRoom,
+                    onRefresh: _loadRooms,
+                    emptyLabel: 'No topic rooms yet.\nCreate one!',
+                  ),
+                ],
+              ),
       // ── FAB ────────────────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateRoomDialog,
@@ -226,12 +247,16 @@ class _ChatRoomsScreenState extends State<ChatRoomsScreen>
 
 class _RoomList extends StatelessWidget {
   final List<ChatRoom> rooms;
+  final Map<String, int> unreadCounts;
   final ValueChanged<ChatRoom> onTap;
+  final RefreshCallback onRefresh;
   final String emptyLabel;
 
   const _RoomList({
     required this.rooms,
+    required this.unreadCounts,
     required this.onTap,
+    required this.onRefresh,
     required this.emptyLabel,
   });
 
@@ -250,10 +275,20 @@ class _RoomList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 88), // space for FAB
-      itemCount: rooms.length,
-      itemBuilder: (context, i) => _RoomTile(room: rooms[i], onTap: () => onTap(rooms[i])),
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 8, bottom: 88), // space for FAB
+        itemCount: rooms.length,
+        itemBuilder: (context, i) {
+          final room = rooms[i];
+          return _RoomTile(
+            room: room, 
+            onTap: () => onTap(room),
+            unreadCount: unreadCounts[room.id] ?? 0,
+          );
+        },
+      ),
     );
   }
 }
@@ -263,8 +298,9 @@ class _RoomList extends StatelessWidget {
 class _RoomTile extends StatelessWidget {
   final ChatRoom room;
   final VoidCallback onTap;
+  final int unreadCount;
 
-  const _RoomTile({required this.room, required this.onTap});
+  const _RoomTile({required this.room, required this.onTap, this.unreadCount = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -274,8 +310,12 @@ class _RoomTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Badge(
+        label: Text(unreadCount.toString()),
+        isLabelVisible: unreadCount > 0,
+        alignment: const Alignment(0.95, -0.7),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: cs.outlineVariant, width: 0.5)),
         ),
@@ -366,6 +406,7 @@ class _RoomTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/supabase_service.dart';
+import '../ai_assistant_screen.dart';
 import '../../widgets/ask_ai_dialog.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -90,9 +91,14 @@ class _PackagesViewState extends State<_PackagesView> {
     if (_searchController.text.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      final data = _ecosystem == 'npm'
-          ? await ApiService.fetchNpmPackage(_searchController.text.trim())
-          : await ApiService.fetchPubPackage(_searchController.text.trim());
+      final query = _searchController.text.trim();
+      final data = switch (_ecosystem) {
+        'npm' => await ApiService.fetchNpmPackage(query),
+        'pub' => await ApiService.fetchPubPackage(query),
+        'maven' => await ApiService.fetchMavenPackage(query),
+        'pypi' => await ApiService.fetchPyPiPackage(query),
+        _ => throw Exception('Unknown ecosystem'),
+      };
       setState(() {
         _packageData = data;
         _isLoading = false;
@@ -188,10 +194,13 @@ class _EcosystemToggle extends StatelessWidget {
       style: SegmentedButton.styleFrom(
         selectedBackgroundColor: cs.primaryContainer,
         selectedForegroundColor: cs.onPrimaryContainer,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
       ),
       segments: const [
-        ButtonSegment(value: 'npm', label: Text('npm'), icon: Icon(Icons.javascript, size: 16)),
-        ButtonSegment(value: 'pub', label: Text('pub.dev'), icon: Icon(Icons.flutter_dash, size: 16)),
+        ButtonSegment(value: 'npm', label: Text('JS'), icon: Icon(Icons.javascript, size: 16)),
+        ButtonSegment(value: 'pub', label: Text('Dart'), icon: Icon(Icons.flutter_dash, size: 16)),
+        ButtonSegment(value: 'maven', label: Text('Java'), icon: Icon(Icons.code, size: 16)),
+        ButtonSegment(value: 'pypi', label: Text('Py'), icon: Icon(Icons.terminal, size: 16)),
       ],
       selected: {value},
       onSelectionChanged: (s) => onChanged(s.first),
@@ -207,6 +216,15 @@ class _PackagePlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    
+    final hint = switch (ecosystem) {
+      'npm' => 'Search NPM packages by name',
+      'pub' => 'Search pub.dev packages by name',
+      'maven' => 'Search Maven Central artifacts',
+      'pypi' => 'Search PyPI Python packages',
+      _ => 'Search for a package',
+    };
+
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Icon(Icons.inventory_2_outlined, size: 64, color: cs.outlineVariant),
@@ -214,7 +232,7 @@ class _PackagePlaceholder extends StatelessWidget {
         Text('Search for a package', style: tt.titleMedium?.copyWith(color: cs.onSurfaceVariant)),
         const SizedBox(height: 4),
         Text(
-          ecosystem == 'npm' ? 'Search NPM packages by name' : 'Search pub.dev packages by name',
+          hint,
           style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
@@ -295,11 +313,14 @@ class _PackageResultCard extends StatelessWidget {
                     icon: Icon(Icons.auto_awesome, size: 16, color: cs.primary),
                     label: const Text('Ask AI'),
                     onPressed: () {
-                      AskAiDialog.show(
+                      Navigator.push(
                         context,
-                        title: data['name'],
-                        contextData:
-                            "Package: ${data['name']}\nDescription: ${data['description'] ?? 'N/A'}\nLatest Version: ${data['latest_version']}\nEcosystem: $ecosystem",
+                        MaterialPageRoute(
+                          builder: (_) => AiAssistantScreen(
+                            initialQuery: 'Tell me about ${data['name']}',
+                            contextData: "Package: ${data['name']}\nDescription: ${data['description'] ?? 'N/A'}\nLatest Version: ${data['latest_version']}\nEcosystem: $ecosystem",
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -311,9 +332,13 @@ class _PackageResultCard extends StatelessWidget {
               icon: const Icon(Icons.share_outlined, size: 16),
               label: const Text('Share Package'),
               onPressed: () {
-                final url = ecosystem == 'npm'
-                    ? 'https://www.npmjs.com/package/${data['name']}'
-                    : 'https://pub.dev/packages/${data['name']}';
+                final url = switch (ecosystem) {
+                  'npm' => 'https://www.npmjs.com/package/${data['name']}',
+                  'pub' => 'https://pub.dev/packages/${data['name']}',
+                  'maven' => 'https://search.maven.org/artifact/${data['name']}',
+                  'pypi' => 'https://pypi.org/project/${data['name']}/',
+                  _ => '',
+                };
                 Share.share('Check out this package: ${data['name']} (v${data['latest_version']})\n$url');
               },
             ),
@@ -502,10 +527,14 @@ class _VulnCard extends StatelessWidget {
                   icon: Icon(Icons.auto_awesome, color: cs.primary, size: 20),
                   tooltip: 'Ask AI',
                   onPressed: () {
-                    AskAiDialog.show(
+                    Navigator.push(
                       context,
-                      title: vuln['id'] ?? 'Vulnerability',
-                      contextData: "ID: ${vuln['id']}\nSummary: ${vuln['summary'] ?? 'N/A'}\nDetails: ${vuln['details'] ?? 'N/A'}",
+                      MaterialPageRoute(
+                        builder: (_) => AiAssistantScreen(
+                          initialQuery: 'Explain this vulnerability: ${vuln['id']}',
+                          contextData: "ID: ${vuln['id']}\nSummary: ${vuln['summary'] ?? 'N/A'}\nDetails: ${vuln['details'] ?? 'N/A'}",
+                        ),
+                      ),
                     );
                   },
                 ),

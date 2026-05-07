@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static ThemeData getTheme(Color primaryColor, String fontFamily, bool isDarkMode) {
+  static ThemeData getTheme({
+    required Color primaryColor,
+    required String fontFamily,
+    required bool isDarkMode,
+    Color? fontColor,
+  }) {
     TextTheme Function([TextTheme?]) fontMethod;
 
     switch (fontFamily) {
@@ -25,7 +30,14 @@ class AppTheme {
       seedColor: primaryColor,
       brightness: isDarkMode ? Brightness.dark : Brightness.light,
     );
-    final baseTextTheme = fontMethod();
+    var baseTextTheme = fontMethod();
+
+    if (fontColor != null) {
+      baseTextTheme = baseTextTheme.apply(
+        bodyColor: fontColor,
+        displayColor: fontColor,
+      );
+    }
 
     return ThemeData(
       useMaterial3: true,

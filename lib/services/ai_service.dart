@@ -2,11 +2,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AiService {
-  static const String _apiKey = String.fromEnvironment('GROQ_API_KEY', defaultValue: 'YOUR_API_KEY_HERE');
-  static const String _endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+  static const String _apiKey = String.fromEnvironment(
+    'GROQ_API_KEY',
+    defaultValue: 'YOUR_API_KEY_HERE',
+  );
+  static const String _endpoint =
+      'https://api.groq.com/openai/v1/chat/completions';
 
   Future<String> askAI(String context, String question) async {
-    final prompt = '''
+    final prompt =
+        '''
 Context:
 $context
 
@@ -21,12 +26,9 @@ $question
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'model': 'llama3-70b-8192',
+        'model': 'llama-3.1-8b-instant',
         'messages': [
-          {
-            'role': 'user',
-            'content': prompt,
-          }
+          {'role': 'user', 'content': prompt},
         ],
         'temperature': 1,
         'max_completion_tokens': 8192,
@@ -40,5 +42,12 @@ $question
     } else {
       throw Exception('Failed to get AI response: ${response.body}');
     }
+  }
+
+  Future<String> summarizeText(String text) async {
+    return askAI(
+      "You are a helpful assistant that summarizes technical content.",
+      text,
+    );
   }
 }

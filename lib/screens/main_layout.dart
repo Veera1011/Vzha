@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import '../services/chat_service.dart';
 import 'auth/login_screen.dart';
 import 'settings_screen.dart';
 import 'saved_screen.dart';
@@ -19,6 +20,8 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
   final SupabaseService _supabaseService = SupabaseService();
+  final _chatService = ChatService();
+  int _totalUnread = 0;
 
   // Bottom nav visibility (auto-hide on scroll)
   bool _navVisible = true;
@@ -36,6 +39,14 @@ class _MainLayoutState extends State<MainLayout> {
       const ToolsTab(),
       const ChatRoomsScreen(),
     ];
+    _updateUnreadCount();
+  }
+
+  Future<void> _updateUnreadCount() async {
+    final count = await _chatService.getTotalUnreadCount();
+    if (mounted) {
+      setState(() => _totalUnread = count);
+    }
   }
 
   void _onScroll(ScrollNotification notification) {
@@ -63,7 +74,7 @@ class _MainLayoutState extends State<MainLayout> {
     final tt = Theme.of(context).textTheme;
     final user = Supabase.instance.client.auth.currentUser;
     final email = user?.email ?? 'Developer';
-    final initial = email[0].toUpperCase();
+    final initial = email.isNotEmpty ? email[0].toUpperCase() : 'D';
 
     return Scaffold(
       // ════════════════════════════════════════════════════════════════════
@@ -90,7 +101,7 @@ class _MainLayoutState extends State<MainLayout> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(email, style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: cs.onPrimaryContainer), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text('Developer', style: tt.labelSmall?.copyWith(color: cs.onPrimaryContainer.withValues(alpha: 0.7))),
+                          Text('Developer', style: tt.labelSmall?.copyWith(color: cs.onPrimaryContainer.withOpacity(0.7))),
                         ],
                       ),
                     ),
@@ -201,26 +212,28 @@ class _MainLayoutState extends State<MainLayout> {
                 _currentIndex = i;
                 _navVisible = true; // always show on tab switch
               });
+              _updateUnreadCount();
             },
-            destinations: const [
-              NavigationDestination(
+            destinations: [
+              const NavigationDestination(
                 icon: Icon(Icons.home_outlined),
                 selectedIcon: Icon(Icons.home_rounded),
                 label: 'Home',
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(Icons.article_outlined),
                 selectedIcon: Icon(Icons.article_rounded),
                 label: 'Feed',
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(Icons.build_outlined),
                 selectedIcon: Icon(Icons.build_rounded),
                 label: 'Tools',
               ),
               NavigationDestination(
                 icon: Badge(
-                  label: const Text('3'),
+                  label: Text(_totalUnread.toString()),
+                  isLabelVisible: _totalUnread > 0,
                   child: const Icon(Icons.forum_outlined),
                 ),
                 selectedIcon: const Icon(Icons.forum_rounded),
