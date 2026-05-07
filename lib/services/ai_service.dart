@@ -26,7 +26,7 @@ $question
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'model': 'llama-3.1-8b-instant',
+        'model': 'llama3-70b-8192',
         'messages': [
           {'role': 'user', 'content': prompt},
         ],
